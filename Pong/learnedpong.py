@@ -1,6 +1,9 @@
 import pygame
 import pandas as pd
-from sklearn.neighbors
+from sklearn.neighbors import KNeighborsRegressor
+
+clf= KNeighborsRegressor(n_neighbors=3)
+
 WIDTH=1200
 HEIGHT=600
 BORDER=20
@@ -49,11 +52,14 @@ class Paddle:
     def show(self, color):
         global screen
         pygame.draw.rect(screen, color, pygame.Rect((WIDTH-PWIDTH,self.py),(BORDER, PHEIGHT)))
-    def update(self):
-        if pygame.mouse.get_pos()[1]>BORDER and pygame.mouse.get_pos()[1]<HEIGHT-BORDER-PHEIGHT:
-            self.show(pygame.Color("black"))
-            self.py=pygame.mouse.get_pos()[1]
-            self.show(pygame.Color("white"))
+    def update(self, prediction):
+        if prediction-self.HEIGHT//2>BORDER and prediction+self.HEIGHT//2<HEIGHT-BORDER:
+            self.show(bgColor)
+            self.py=prediction
+            self.show(fgColor)
+
+
+
 
 ballplay= Ball(WIDTH-RADIUS, HEIGHT//2,velocity, velocity)
 paddleplay=Paddle(HEIGHT//2)
@@ -70,7 +76,15 @@ clock=pygame.time.Clock()
 #sample = open("game.csv", "w")
 
 #print("x, y, vx, vy, Paddle.y", file=sample)
+pong=pd.read_csv('game.csv')
+pong=pong.drop_duplicates()
 
+X=pong.drop(columns="paddle.y")
+Y=pong['paddle.py']
+clf.fit(X,Y)
+
+
+df=pd.DataFrame(columns=['x', 'y', 'vx', 'vy'])
 while True:
 
     e = pygame.event.poll()
@@ -78,7 +92,9 @@ while True:
         break
     clock.tick(FRAMERATE)
     pygame.display.flip()
-    ballplay.update()
+    toPredict=df.append({'x':ballplay.x, 'y':ballplay.y, 'vx':ballplay.vx, 'vy':ballplay.vy}, ignore_index=True)
+    shouldMove = clf.predict(toPredict)
+    ballplay.update(shouldMove)
     paddleplay.update()
 
     #print("{}, {}, {}, {}, {}".format(ballplay.x, ballplay.y, ballplay.vx, ballplay.vy, paddleplay.py, file=sample))
