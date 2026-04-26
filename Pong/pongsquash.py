@@ -63,6 +63,12 @@ pygame.draw.rect(screen, fgColor, pygame.Rect((0,0), (WIDTH,BORDER)))
 pygame.draw.rect(screen, fgColor, pygame.Rect((0,0), (BORDER,HEIGHT)))
 pygame.draw.rect(screen, fgColor, pygame.Rect((0,HEIGHT-BORDER), (WIDTH,BORDER)))
 clock=pygame.time.Clock()
+
+
+sample = open("game.csv", "w")
+
+print("x, y, vx, vy, Paddle.y", file=sample)
+
 while True:
 
     e = pygame.event.poll()
@@ -72,4 +78,6 @@ while True:
     pygame.display.flip()
     ballplay.update()
     paddleplay.update()
+
+    print("{}, {}, {}, {}, {}".format(ballplay.x, ballplay.y, ballplay.vx, ballplay.vy, paddleplay.py, file=sample))
 pygame.quit()
